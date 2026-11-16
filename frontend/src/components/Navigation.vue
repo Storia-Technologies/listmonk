@@ -32,6 +32,9 @@
         :label="$t('menu.allCampaigns')" />
       <b-menu-item v-if="$can('campaigns:manage')" :to="{ name: 'campaign', params: { id: 'new' } }" tag="router-link"
         :active="activeItem.campaign" data-cy="new-campaign" icon="plus" :label="$t('menu.newCampaign')" />
+      <b-menu-item v-if="serverConfig.sequences && $can('campaigns:get')" :to="{ name: 'sequences' }"
+        tag="router-link" :active="activeItem.sequences || activeItem.sequence" data-cy="sequences"
+        icon="email-outline" label="Sequences" />
       <b-menu-item v-if="$can('media:*')" :to="{ name: 'media' }" tag="router-link" :active="activeItem.media"
         data-cy="media" icon="image-outline" :label="$t('menu.media')" />
       <b-menu-item v-if="$can('templates:get')" :to="{ name: 'templates' }" tag="router-link"
@@ -89,7 +92,7 @@ export default {
   },
 
   computed: {
-    ...mapState(['profile']),
+    ...mapState(['profile', 'serverConfig']),
   },
 
   mounted() {

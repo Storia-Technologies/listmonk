@@ -1,0 +1,52 @@
+# Local stack for clicking through the Storia build: listmonk + Postgres +
+# Mailpit (catches every e-mail, nothing leaves the machine).
+#
+#   docker build -f Dockerfile.storia -t storia-listmonk:dev .
+#   docker compose -p seqtest -f storia/test/docker-compose.yml up -d
+#
+# listmonk: http://localhost:9100/admin  (admin / storia-test-1)
+# Mailpit:  http://localhost:8125
+#
+# The command mirrors the Hosted Apps tenant template, so this also exercises
+# the same install/upgrade path a real tenant goes through.
+services:
+  app:
+    image: storia-listmonk:dev
+    container_name: seqtest_app
+    depends_on:
+      db:
+        condition: service_healthy
+    command: [sh, -c, "./listmonk --install --idempotent --yes --config '' && ./listmonk --upgrade --yes --config '' && ./listmonk --config ''"]
+    ports:
+      - "9100:9000"
+    environment:
+      LISTMONK_app__address: 0.0.0.0:9000
+      LISTMONK_db__user: listmonk
+      LISTMONK_db__password: listmonk
+      LISTMONK_db__database: listmonk
+      LISTMONK_db__host: db
+      LISTMONK_db__port: 5432
+      LISTMONK_db__ssl_mode: disable
+      TZ: Australia/Perth
+      LISTMONK_ADMIN_USER: admin
+      LISTMONK_ADMIN_PASSWORD: storia-test-1
+      LISTMONK_ADMIN_API_USER: api
+
+  db:
+    image: postgres:17-alpine
+    container_name: seqtest_db
+    environment:
+      POSTGRES_USER: listmonk
+      POSTGRES_PASSWORD: listmonk
+      POSTGRES_DB: listmonk
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U listmonk"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mail:
+    image: axllent/mailpit:latest
+    container_name: seqtest_mail
+    ports:
+      - "8125:8025"

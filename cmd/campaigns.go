@@ -365,6 +365,11 @@ func (a *App) UpdateCampaignStatus(c echo.Context) error {
 		return err
 	}
 
+	// A campaign that is a sequence step is sent by its sequence (Storia addition, see sequences.go).
+	if err := a.checkSequenceCampaign(id, req.Status); err != nil {
+		return err
+	}
+
 	// Update the campaign status in the DB.
 	out, err := a.core.UpdateCampaignStatus(id, req.Status)
 	if err != nil {

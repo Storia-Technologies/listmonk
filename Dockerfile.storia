@@ -1,0 +1,79 @@
+# Storia build of listmonk (upstream + Sequences).
+#
+# Upstream's own Dockerfile copies in a binary built on the host. This one
+# builds everything from source so the image can be produced anywhere with
+# only Docker:
+#
+#   docker build -f Dockerfile.storia \
+#     --build-arg VERSION=v6.2.0 --build-arg STORIA_BUILD=storia.1 \
+#     --build-arg COMMIT=$(git rev-parse --short HEAD) \
+#     -t ghcr.io/storia-technologies/listmonk:6.2.0-storia.1 .
+#
+# VERSION must stay the upstream version this branch is based on: listmonk
+# uses it to decide which database migrations to run.
+
+# ---- Admin frontend ---------------------------------------------------------
+FROM node:20-alpine AS frontend
+ARG VERSION=v6.2.0
+WORKDIR /src/frontend
+
+COPY frontend/email-builder/package.json frontend/email-builder/yarn.lock ./email-builder/
+RUN cd email-builder && yarn install --frozen-lockfile
+
+# The frontend's postinstall copies the altcha captcha script into the public
+# static folder (one level up), which the backend stage then packs.
+COPY frontend/package.json frontend/yarn.lock ./
+RUN mkdir -p ../static/public/static && yarn install --frozen-lockfile
+
+COPY frontend/ ./
+RUN cd email-builder && VUE_APP_VERSION="${VERSION}" yarn build \
+    && mkdir -p ../public/static/email-builder \
+    && cp -r dist/* ../public/static/email-builder/
+# The lint step that runs before the build reads .gitignore, which the
+# repo's .dockerignore keeps out of the build context.
+RUN echo node_modules > .gitignore && echo /dist >> .gitignore \
+    && VUE_APP_VERSION="${VERSION}" yarn build
+
+# ---- Backend ----------------------------------------------------------------
+FROM golang:1.26-alpine AS backend
+ARG VERSION=v6.2.0
+ARG STORIA_BUILD=storia.dev
+ARG COMMIT=unknown
+WORKDIR /src
+
+RUN go install github.com/knadh/stuffbin/...@latest
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+COPY --from=frontend /src/frontend/dist ./frontend/dist
+COPY --from=frontend /src/static/public/static/altcha.umd.js ./static/public/static/altcha.umd.js
+
+RUN CGO_ENABLED=0 go build -o listmonk \
+      -ldflags="-s -w -X 'main.buildString=${VERSION}-${STORIA_BUILD} (#${COMMIT} $(date -u +%Y-%m-%dT%H:%M:%S%z))' -X 'main.versionString=${VERSION}'" \
+      ./cmd \
+    && /go/bin/stuffbin -a stuff -in listmonk -out listmonk \
+      config.toml.sample \
+      schema.sql queries:/queries permissions.json \
+      static/public:/public \
+      static/email-templates \
+      frontend/dist:/admin \
+      i18n:/i18n
+
+# ---- Runtime (same as upstream's Dockerfile) --------------------------------
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates tzdata shadow su-exec
+
+WORKDIR /listmonk
+
+COPY --from=backend /src/listmonk .
+COPY config.toml.sample config.toml
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+EXPOSE 9000
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["./listmonk"]

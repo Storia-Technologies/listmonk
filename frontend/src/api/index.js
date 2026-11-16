@@ -574,3 +574,52 @@ export const disableTOTP = (id, data) => http.delete(
   `/api/users/${id}/twofa`,
   { data },
 );
+
+// Sequences (Storia addition).
+export const getSequences = () => http.get('/api/sequences', { loading: models.campaigns });
+
+export const getSequence = (id) => http.get(`/api/sequences/${id}`, { loading: models.campaigns });
+
+export const createSequence = (data) => http.post('/api/sequences', data, { loading: models.campaigns });
+
+export const updateSequence = (id, data) => http.put(`/api/sequences/${id}`, data, { loading: models.campaigns });
+
+export const updateSequenceStatus = (id, status) => http.put(
+  `/api/sequences/${id}/status`,
+  { status },
+  { loading: models.campaigns },
+);
+
+export const deleteSequence = (id) => http.delete(`/api/sequences/${id}`, { loading: models.campaigns });
+
+export const createSequenceStep = (id, data) => http.post(
+  `/api/sequences/${id}/steps`,
+  data,
+  { loading: models.campaigns },
+);
+
+export const updateSequenceStep = (id, stepId, data) => http.put(
+  `/api/sequences/${id}/steps/${stepId}`,
+  data,
+  { loading: models.campaigns },
+);
+
+export const orderSequenceSteps = (id, ids) => http.put(
+  `/api/sequences/${id}/steps/order`,
+  { ids },
+  { loading: models.campaigns },
+);
+
+export const deleteSequenceStep = (id, stepId) => http.delete(
+  `/api/sequences/${id}/steps/${stepId}`,
+  { loading: models.campaigns },
+);
+
+export const getSequenceSubscribers = (id, params) => http.get(
+  `/api/sequences/${id}/subscribers`,
+  { params },
+);
+
+export const removeSequenceSubscriber = (id, subId) => http.delete(
+  `/api/sequences/${id}/subscribers/${subId}`,
+);

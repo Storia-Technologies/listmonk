@@ -95,6 +95,19 @@ const routes = [
     meta: { title: 'globals.terms.campaign', group: 'campaigns' },
     component: () => import('../views/Campaign.vue'),
   },
+  // Sequences (Storia addition).
+  {
+    path: '/sequences',
+    name: 'sequences',
+    meta: { title: 'Sequences', group: 'campaigns' },
+    component: () => import('../views/Sequences.vue'),
+  },
+  {
+    path: '/sequences/:id',
+    name: 'sequence',
+    meta: { title: 'Sequences', group: 'campaigns' },
+    component: () => import('../views/Sequence.vue'),
+  },
   {
     path: '/user/profile',
     name: 'userProfile',

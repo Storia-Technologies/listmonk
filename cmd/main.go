@@ -300,6 +300,9 @@ func main() {
 		needsUserSetup: !hasUsers,
 	}
 
+	// Start sequences (Storia addition, see sequences.go).
+	app.initSequences()
+
 	// Star the update checker.
 	if ko.Bool("app.check_updates") {
 		go app.checkUpdates(versionString, time.Hour*24)
