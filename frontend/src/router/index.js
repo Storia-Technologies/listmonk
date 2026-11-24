@@ -95,6 +95,13 @@ const routes = [
     meta: { title: 'globals.terms.campaign', group: 'campaigns' },
     component: () => import('../views/Campaign.vue'),
   },
+  // Claude connector (Storia addition).
+  {
+    path: '/settings/connector',
+    name: 'connector',
+    meta: { title: 'Claude connector', group: 'settings' },
+    component: () => import('../views/Connector.vue'),
+  },
   // Sequences (Storia addition).
   {
     path: '/sequences',

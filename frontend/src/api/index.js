@@ -623,3 +623,13 @@ export const getSequenceSubscribers = (id, params) => http.get(
 export const removeSequenceSubscriber = (id, subId) => http.delete(
   `/api/sequences/${id}/subscribers/${subId}`,
 );
+
+// Claude connector (Storia addition).
+export const getConnector = () => http.get('/api/mcp', { loading: models.settings });
+
+export const updateConnectorSettings = (data) => http.put('/api/mcp/settings', data, { loading: models.settings });
+
+export const deleteConnectorConnection = (id) => http.delete(
+  `/api/mcp/connections/${id}`,
+  { loading: models.settings },
+);

@@ -61,6 +61,8 @@
       :label="$t('menu.settings')">
       <b-menu-item v-if="$can('settings:get')" :to="{ name: 'settings' }" tag="router-link"
         :active="activeItem.settings" data-cy="all-settings" icon="cog-outline" :label="$t('menu.settings')" />
+      <b-menu-item v-if="serverConfig.mcp && $can('settings:get')" :to="{ name: 'connector' }" tag="router-link"
+        :active="activeItem.connector" data-cy="connector" icon="link-variant" label="Claude connector" />
       <b-menu-item v-if="$can('settings:maintain')" :to="{ name: 'maintenance' }" tag="router-link"
         :active="activeItem.maintenance" data-cy="maintenance" icon="wrench-outline" :label="$t('menu.maintenance')" />
       <b-menu-item v-if="$can('settings:get')" :to="{ name: 'logs' }" tag="router-link" :active="activeItem.logs"

@@ -303,6 +303,9 @@ func main() {
 	// Start sequences (Storia addition, see sequences.go).
 	app.initSequences()
 
+	// Start the Claude connector (Storia addition, see mcp.go).
+	app.initMCP()
+
 	// Star the update checker.
 	if ko.Bool("app.check_updates") {
 		go app.checkUpdates(versionString, time.Hour*24)

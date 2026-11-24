@@ -117,6 +117,9 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
 		// Sequences (Storia addition, see sequences.go).
 		initSequenceHandlers(g, a)
 
+		// Claude connector (Storia addition, see mcp.go).
+		initMCPHandlers(e, a)
+
 		g.GET("/api/subscribers", pm(a.QuerySubscribers, "subscribers:get_all", "subscribers:get"))
 		g.GET("/api/subscribers/:id", pm(hasID(a.GetSubscriber), "subscribers:get_all", "subscribers:get"))
 		g.GET("/api/subscribers/:id/activity", pm(hasID(a.GetSubscriberActivity), "subscribers:get_all", "subscribers:get"))
